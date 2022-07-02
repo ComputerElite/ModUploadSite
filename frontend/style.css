@@ -1,0 +1,66 @@
+body {
+    background-color: var(--backgroundColor);
+    color: var(--fontColor);
+    margin: 0;
+    font-family: 'Open Sans';
+}
+
+:root {
+    --backgroundColor: #111111;
+    --interactableColor: #55c49b;
+    --highlightColor: #EEEEEE;
+    --highlightBackgroundColor: #666666;
+    --fontColor: #EEEEEE;
+    --borderRadius: 5px;
+    --red: #eb0303;
+    --redDark: #ab0d0e;
+    --darkenColor: #222222BB;
+}
+
+.red {
+    color: var(--red);
+    border-color: var(--red);
+}
+
+.card {
+    border-radius: var(--borderRadius);
+    background-color: var(--darkenColor);
+    padding: 10px;
+    text-align: left;
+}
+
+.nomargintopbottom {
+    margin-bottom: 0px;
+    margin-top: 0;
+}
+
+.nomargintopmarginleft {
+    margin-top: 0;
+    margin-left: 20px;
+}
+
+input {
+    border-radius: var(--borderRadius);
+    background-color: var(--backgroundColor);
+    color: var(--interactableColor);
+    border: 1px solid var(--interactableColor);
+    padding: 5px;
+}
+
+.content {
+    padding: 10px;
+}
+
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.column {
+    flex-direction: column;
+}
+
+input {
+    margin-right: 10px;
+    margin:2px;
+}
