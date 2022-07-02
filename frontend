@@ -1,0 +1,252 @@
+<html>
+    <head>
+        {meta}
+        <title>Home - Mod upload site</title>
+    </head>
+    <body>
+        This emptyness is really sad :(
+    </body>
+</html>function SafeFormat(text) {
+    var d = document.createElement("div")
+    d.innerText = text
+    return d.innerHTML
+}
+
+function tfetch(url, method = "GET", body = "") {
+    return ifetch(url, false, method, body)
+}
+
+function jfetch(url, method = "GET", body = "") {
+    return ifetch(url, true, method, body)
+}
+
+function ifetch(url, asjson = true, method = "GET", body = "") {
+    return new Promise((resolve, reject) => {
+        if(method == "GET" || method == "HEAD") {
+            fetch(url, {
+                method: method,
+                headers: {
+                    "token": localStorage.token
+                }
+            }).then(res => {
+                res.text().then(res => {
+                    if(asjson) {
+                        try {
+                            resolve(JSON.parse(res))
+                        } catch(e) {
+                            reject(e)
+                        }
+                    } else {
+                        resolve(res)
+                    }
+                })
+            })
+        } else {
+            fetch(url, {
+                method: method,
+                body: body,
+                headers: {
+                    "token": localStorage.token
+                }
+            }).then(res => {
+                res.text().then(res => {
+                    if(asjson) {
+                        try {
+                            resolve(JSON.parse(res))
+                        } catch(e) {
+                            reject(e)
+                        }
+                    } else {
+                        resolve(res)
+                    }
+                })
+            })
+        }
+    })
+}body {
+    background-color: var(--backgroundColor);
+    color: var(--fontColor);
+    margin: 0;
+    font-family: 'Open Sans';
+}
+
+:root {
+    --backgroundColor: #111111;
+    --interactableColor: #55c49b;
+    --highlightColor: #EEEEEE;
+    --highlightBackgroundColor: #666666;
+    --fontColor: #EEEEEE;
+    --borderRadius: 5px;
+    --red: #eb0303;
+    --redDark: #ab0d0e;
+    --darkenColor: #222222BB;
+}
+
+.red {
+    color: var(--red);
+    border-color: var(--red);
+}
+
+.card {
+    border-radius: var(--borderRadius);
+    background-color: var(--darkenColor);
+    padding: 10px;
+    text-align: left;
+}
+
+.nomargintopbottom {
+    margin-bottom: 0px;
+    margin-top: 0;
+}
+
+.nomargintopmarginleft {
+    margin-top: 0;
+    margin-left: 20px;
+}
+
+input {
+    border-radius: var(--borderRadius);
+    background-color: var(--backgroundColor);
+    color: var(--interactableColor);
+    border: 1px solid var(--interactableColor);
+    padding: 5px;
+}
+
+.content {
+    padding: 10px;
+}
+
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.column {
+    flex-direction: column;
+}
+
+input {
+    margin-right: 10px;
+    margin:2px;
+}<html>
+    <head>
+        {meta}
+        <title>Home - Mod upload site</title>
+    </head>
+    <body>
+        <div class="content">
+            <h1>Upload a mod</h1>
+            <div class="flex column">
+                <input type="text" id="name" placeholder="Mod name">
+                <input type="text" id="modId" placeholder="Mod id">
+                <input type="text" id="version" placeholder="version">
+                <input type="text" id="author" placeholder="author(s)">
+                <input type="text" id="packageId" placeholder="Game package name">
+                <input type="text" id="description" placeholder="Mod description">
+                <input type="text" id="packageVersion" placeholder="Game version">
+                <input type="text" id="uploadedModId" placeholder="Internal Mod id" readonly>
+                <input type="button" onclick="UploadFile()" value="Upload a file">
+                <div style="width: 90%; background-color: var(--highlightBackgroundColor); height: 10px;"><div style="background-color: var(--highlightColor); height: 100%; width: 0%;" id="progress"></div></div>
+                <input type="button" onclick="Save()" value="Save changes">
+            </div>
+            <h3>Uploaded files</h3>
+            <div class="flex" id="files">
+            </div>
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            const name = document.getElementById("name")
+            const modId = document.getElementById("modId")
+            const version = document.getElementById("version")
+            const author = document.getElementById("author")
+            const packageId = document.getElementById("packageId")
+            const description = document.getElementById("description")
+            const packageVersion = document.getElementById("packageVersion")
+            const uploadedModId = document.getElementById("uploadedModId")
+            const files = document.getElementById("files")
+
+            function FormatFile(file) {
+                return ` <div class="card">
+                    <h3 class="nomargintopbottom">${SafeFormat(file.filename)}</h3>
+                    <div class="nomargintopmarginleft">${file.sHA256}</div>
+                    <div class="nomargintopmarginleft">${file.sizeString}</div>
+                    <input onclick="RemoveFile('${file.sHA256}')" type="button" value="Delete" class="red">
+                    ${file.supportsModInfoPopulation ? `<input onclick="PopulateModInfo('${file.sHA256}')" type="button" value="Populate mod info">` : ""}
+                </div>`
+            }
+
+            var currentModId = "";
+            var modInfo = {}
+            tfetch("/api/v1/startmodupload", "POST").then(res => {
+                currentModId = res
+                UpdateMod()
+            })
+
+            function UploadFile() {
+                var input = document.createElement("input")
+                input.setAttribute("type", "file")
+                input.onchange = function (e) {
+                    if (!this.files[0]) {
+                        return;
+                    }
+                    var reader = new FileReader();
+                    var fileName = this.files[0].name
+                    reader.onloadend = function () {
+                        var xhr = new XMLHttpRequest()
+                        xhr.upload.addEventListener("progress", function(evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total;
+                                percentComplete = parseInt(percentComplete * 100);
+                                progress.style.width = percentComplete + "%"
+                            }
+                        }, false);
+                        xhr.onloadend = () => {
+                            progress.style.width = "0%"
+                            UpdateMod()
+                        }
+                        xhr.open("POST", "/api/v1/uploadmodfile/" + currentModId + "?filename=" + fileName)
+                        xhr.setRequestHeader("token", localStorage.token)
+                        xhr.send(reader.result)
+                    }
+                    reader.readAsArrayBuffer(this.files[0]);
+                }
+
+                input.click()
+            }
+
+            function UpdateMod() {
+                jfetch("/api/v1/mod/" + currentModId, "GET").then(res => {
+                    modInfo = res
+                    UpdateUI()
+                })
+            }
+
+            function Save() {
+                modInfo.name = name.value
+                modInfo.modId = modId.value
+                modInfo.version = version.value
+                modInfo.author = author.value
+                modInfo.packageId = packageId.value
+                modInfo.description = description.value
+                modInfo.packageVersion = packageVersion.value
+                tfetch("/api/v1/mod/", "POST", JSON.stringify(modInfo))
+            }
+
+            function UpdateUI() {
+                name.value = modInfo.name
+                modId.value = modInfo.modId
+                version.value = modInfo.version
+                author.value = modInfo.author
+                packageId.value = modInfo.packageId
+                description.value = modInfo.description
+                packageVersion.value = modInfo.packageVersion
+                uploadedModId.value = modInfo.uploadedModId
+                f = ""
+                modInfo.files.forEach(x => {
+                    f += FormatFile(x)
+                })
+                files.innerHTML = f
+            }
+        </script>
+    </body>
+</html>
