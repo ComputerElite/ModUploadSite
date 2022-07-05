@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ModUploadSite
+namespace ModUploadSite.Mods
 {
     public class UploadedModFile
     {
@@ -20,13 +20,19 @@ namespace ModUploadSite
         public string filename { get; set; } = "";
         public string sHA256 { get; set; } = "";
         public long size { get; set; } = 0;
-        public string sizeString { get
+        public string sizeString
+        {
+            get
             {
                 return SizeConverter.ByteSizeToString(size);
-            } }
-        public bool supportsModInfoPopulation { get
+            }
+        }
+        public bool supportsModInfoPopulation
+        {
+            get
             {
                 return PopulatorManager.CanPopulate(filename);
-            } }
+            }
+        }
     }
 }

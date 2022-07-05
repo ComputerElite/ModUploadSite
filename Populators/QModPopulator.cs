@@ -1,4 +1,5 @@
-﻿using QuestPatcher.QMod;
+﻿using ModUploadSite.Mods;
+using QuestPatcher.QMod;
 
 namespace ModUploadSite.Populators
 {
@@ -8,12 +9,14 @@ namespace ModUploadSite.Populators
         {
             try
             {
-                QMod loadedQmod = QMod.ParseAsync(File.Open(filePath, FileMode.Open)).Result;
-                mod.packageId = loadedQmod.PackageId;
+                Stream s = File.Open(filePath, FileMode.Open);
+                QMod loadedQmod = QMod.ParseAsync(s).Result;
+                s.Close();
+                mod.group = GroupHandler.GetBestMatchingGroupID(loadedQmod.PackageId);
                 mod.author = loadedQmod.Author;
                 mod.description = loadedQmod.Description;
                 mod.version = loadedQmod.Version.ToString();
-                mod.packageVersion = loadedQmod.PackageVersion;
+                mod.groupVersion = loadedQmod.PackageVersion;
                 mod.modId = loadedQmod.Id;
                 mod.name = loadedQmod.Name;
                 mod.porter = loadedQmod.Porter;

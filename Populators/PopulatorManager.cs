@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModUploadSite.Mods;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,9 +24,9 @@ namespace ModUploadSite.Populators
             return populators.ContainsKey(Path.GetExtension(filename).ToLower());
         }
 
-        public static PopulationResult PopulateUploadedMod(UploadedMod mod, string filePath)
+        public static PopulationResult PopulateUploadedMod(UploadedMod mod, string fileName, string filePath)
         {
-            string extension = Path.GetExtension(filePath).ToLower();
+            string extension = Path.GetExtension(fileName).ToLower();
             if (!populators.ContainsKey(extension)) return new PopulationResult(false, "No population possile", mod);
             return populators[extension].Invoke(mod, filePath);
         }

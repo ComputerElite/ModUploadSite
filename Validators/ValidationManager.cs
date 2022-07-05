@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ComputerUtils.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,9 +19,9 @@ namespace ModUploadSite.Validators
             return true;
         }
 
-        public static ValidationResult ValidateFile(string filePath)
+        public static ValidationResult ValidateFile(string filename, string filePath)
         {
-            string extension = Path.GetExtension(filePath).ToLower();
+            string extension = Path.GetExtension(filename).ToLower();
             if (!validators.ContainsKey(extension)) return new ValidationResult(true, "No validation possible. Assuming it's correct");
             return validators[extension].Invoke(filePath);
         }

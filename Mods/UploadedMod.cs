@@ -5,21 +5,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ModUploadSite
+namespace ModUploadSite.Mods
 {
     [BsonIgnoreExtraElements]
     public class UploadedMod
     {
-        
+
 
         public UploadedModStatus status { get; set; } = UploadedModStatus.Unpublished;
         public string name { get; set; } = ""; // Mod
         public string author { get; set; } = ""; // ComputerElite
         public string porter { get; set; } = "";
         public string version { get; set; } = ""; // 1.0.0
-        public string packageId { get; set; } = ""; // com.beatgames.beatsaber
-        public string packageVersion { get; set; } = ""; // 1.23.0
-        public string uploaderId { get; set; } = ""; 
+        public string group { get; set; } = ""; // com.beatgames.beatsaber
+        public string groupVersion { get; set; } = ""; // 1.23.0
+        public string uploader { get; set; } = "";
         public string description { get; set; } = ""; // A really great mod
         public string uploadedModId { get; set; } = "";
         public string modId { get; set; } = "";

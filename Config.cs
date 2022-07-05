@@ -12,6 +12,9 @@ namespace ModUploadSite
         public string mongoDBName { get; set; } = "MUS";
         public string mongoDBUrl { get; set; } = "";
         public string masterWebhookUrl { get; set; } = "";
+        public string emailSender { get; set; } = "";
+        public string emailPassword { get; set; } = "";
+        public string emailServer { get; set; } = "";
         public long modSizeLimit { get; set; } = 104857600; // 100 MB
 
         public static Config LoadConfig()

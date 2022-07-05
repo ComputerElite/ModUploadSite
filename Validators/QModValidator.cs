@@ -9,11 +9,13 @@ namespace ModUploadSite.Validators
 {
     public class QModValidator
     {
-        public static ValidationResult ValidateQMod(string fileName)
+        public static ValidationResult ValidateQMod(string filePath)
         {
             try
             {
-                QMod mod = QMod.ParseAsync(File.Open(fileName, FileMode.Open)).Result;
+                Stream s = File.Open(filePath, FileMode.Open);
+                QMod qmod = QMod.ParseAsync(s).Result;
+                s.Close();
             } catch(Exception e)
             {
                 return new ValidationResult(false, e.Message);

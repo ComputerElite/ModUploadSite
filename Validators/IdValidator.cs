@@ -20,7 +20,7 @@ namespace ModUploadSite.Validators
             return true;
         }
 
-        public static string GetNewModId()
+        public static string GetNewId()
         {
             return Hasher.GetSHA256OfString(DateTime.UtcNow.Ticks.ToString());
         }
