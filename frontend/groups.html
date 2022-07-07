@@ -1,0 +1,42 @@
+<html>
+    <head>
+        {meta}
+        <title>groups - Mod upload site</title>
+    </head>
+    <body>
+        <div class="content">
+            <h1>groups</h1>
+            <input type="button" value="Add new group" onclick="AddGroup()">
+            <div class="grid3" id="groups">
+            </div>
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            const groupse = document.getElementById("groups")
+
+            var groups = []
+            
+            UpdateGroups()
+            function UpdateGroups() {
+                jfetch("/api/v1/groups").then(res => {
+                    groups = res
+                    UpdateUI()
+                })
+            }
+
+            function AddGroup() {
+                tfetch("/api/v1/creategroup", "POST").then(res => {
+                    UpdateGroups()
+                })
+            }
+
+            function UpdateUI() {
+                f = ""
+                groups.forEach(x => {
+                    f += FormatGroup(x, true)
+                })
+                groupse.innerHTML = f
+            }
+        </script>
+    </body>
+</html>

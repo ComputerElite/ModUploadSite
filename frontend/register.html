@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {meta}
+        <title>Register - ModUploadSite</title>
+    </head>
+    <body>
+        <div>
+            <h1 style="text-align: center;">Login</h1>
+            <div class="flex center">
+                <h4>username</h4>
+                <input type="text" id="username" style="width: 200px;"></input>
+                <h4>password</h4>
+                <input type="password" id="password" style="width: 200px;"></input>
+                <h4>email</h4>
+                <input type="email" id="email" style="width: 200px;"></input>
+                <a href="/login">Are a user already? Log in here</a>
+                <br />
+                <input type="button" style="margin-top: 10px;" onclick="Register()" value="Register">
+                <div class="textBox" id="text">
+                </div>
+            </div>
+            
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            var token = localStorage.token;
+            const username = document.getElementById("username")
+            const password = document.getElementById("password")
+            const email = document.getElementById("email")
+            const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+
+            function Register() {
+                if(username.value == "" || password.value == "") {
+                    TextBoxError("text", "Put in a username and password")
+                    return
+                }
+                if(!emailRegex.test(email.value)) {
+                    TextBoxError("text", "Please type in a valid email")
+                    return
+                }
+                TextBoxText("text", "Your request is being processed, one sec")
+                tfetch("/api/v1/register", "POST", JSON.stringify({email: email.value, username: username.value, password: password.value})).then(res => {
+                    TextBoxGood("text", res)
+                    location = `/login`
+                }).catch(err => {
+                    TextBoxError("text", err)
+                })
+            }
+        </script>
+    </body>
+</html>

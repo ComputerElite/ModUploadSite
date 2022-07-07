@@ -11,17 +11,20 @@
                 <input type="text" id="modId" placeholder="Mod id">
                 <input type="text" id="version" placeholder="version">
                 <input type="text" id="author" placeholder="author(s)">
-                <input type="text" id="packageId" placeholder="Game package name">
+                <label>Group <select id="groups"></select></label>
                 <input type="text" id="description" placeholder="Mod description">
-                <input type="text" id="packageVersion" placeholder="Game version">
+                <input type="text" id="groupVersion" placeholder="Game version">
                 <input type="text" id="uploadedModId" placeholder="Internal Mod id" readonly>
                 <input type="button" onclick="UploadFile()" value="Upload a file">
                 <div style="width: 90%; background-color: var(--highlightBackgroundColor); height: 10px;"><div style="background-color: var(--highlightColor); height: 100%; width: 0%;" id="progress"></div></div>
                 <input type="button" onclick="Save()" value="Save changes">
+                
             </div>
             <h3>Uploaded files</h3>
             <div class="flex" id="files">
             </div>
+            <input type="text" placeholder="put in mod name for deletion confirmation" id="deleteMod">
+            <input type="button" onclick="DeleteMod()" value="Delete mod" class="red">
         </div>
         <script src="/script.js"></script>
         <script>
@@ -29,28 +32,50 @@
             const modId = document.getElementById("modId")
             const version = document.getElementById("version")
             const author = document.getElementById("author")
-            const packageId = document.getElementById("packageId")
+            const groupse = document.getElementById("groups")
             const description = document.getElementById("description")
-            const packageVersion = document.getElementById("packageVersion")
+            const groupVersion = document.getElementById("groupVersion")
             const uploadedModId = document.getElementById("uploadedModId")
             const files = document.getElementById("files")
 
-            function FormatFile(file) {
-                return ` <div class="card">
-                    <h3 class="nomargintopbottom">${SafeFormat(file.filename)}</h3>
-                    <div class="nomargintopmarginleft">${file.sHA256}</div>
-                    <div class="nomargintopmarginleft">${file.sizeString}</div>
-                    <input onclick="RemoveFile('${file.sHA256}')" type="button" value="Delete" class="red">
-                    ${file.supportsModInfoPopulation ? `<input onclick="PopulateModInfo('${file.sHA256}')" type="button" value="Populate mod info">` : ""}
-                </div>`
+            function DeleteMod() {
+                if(modInfo.name == document.getElementById("deleteMod").value) {
+                    tfetch("/api/v1/mod", "DELETE", modInfo.uploadedModId).then(res => {
+                        location = `/mymods`
+                    })
+                }
             }
 
-            var currentModId = "";
-            var modInfo = {}
-            tfetch("/api/v1/startmodupload", "POST").then(res => {
-                currentModId = res
-                UpdateMod()
+            var groups = []
+            jfetch("/api/v1/groups").then(res => {
+                groups = res
+                groupse.innerHTML = ""
+                groups.forEach(x => {
+                    groupse.innerHTML += `<option value="${x.groupId}">${SafeFormat(x.name)}</option>`
+                });
+                SelectGroup()
             })
+
+            function SelectGroup() {
+                if(modInfo.group) {
+                    groupse.value = modInfo.group
+                }
+            }
+
+            function RemoveFile(sha256) {
+                tfetch(`/api/v1/removemodfile/${currentModId}/${sha256}`, "DELETE").then(res => {
+                    UpdateMod()
+                })
+            }
+            function PopulateModInfo(sha256) {
+                tfetch(`/api/v1/autopopulatemod/${currentModId}/${sha256}`, "POST").then(res => {
+                    UpdateMod()
+                })
+            }
+
+            var currentModId = params.get("modid");
+            var modInfo = {}
+            UpdateMod()
 
             function UploadFile() {
                 var input = document.createElement("input")
@@ -96,9 +121,9 @@
                 modInfo.modId = modId.value
                 modInfo.version = version.value
                 modInfo.author = author.value
-                modInfo.packageId = packageId.value
+                modInfo.group = groupse.value
                 modInfo.description = description.value
-                modInfo.packageVersion = packageVersion.value
+                modInfo.groupVersion = groupVersion.value
                 tfetch("/api/v1/mod/", "POST", JSON.stringify(modInfo))
             }
 
@@ -107,13 +132,13 @@
                 modId.value = modInfo.modId
                 version.value = modInfo.version
                 author.value = modInfo.author
-                packageId.value = modInfo.packageId
                 description.value = modInfo.description
-                packageVersion.value = modInfo.packageVersion
+                groupVersion.value = modInfo.groupVersion
                 uploadedModId.value = modInfo.uploadedModId
+                SelectGroup()
                 f = ""
                 modInfo.files.forEach(x => {
-                    f += FormatFile(x)
+                    f += FormatFile(modInfo, x, true)
                 })
                 files.innerHTML = f
             }

@@ -1,0 +1,47 @@
+<html>
+    <head>
+        {meta}
+        <title>Home - Mod upload site</title>
+    </head>
+    <body>
+        <div class="content">
+            <h1 id="modName"></h1>
+            <div id="mod">
+                
+            </div>
+            <h3>Files</h3>
+            <div class="flex" id="files">
+            </div>
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            const mode = document.getElementById("mod")
+            const modName = document.getElementById("modName")
+            const files = document.getElementById("files")
+            var first = true
+
+            var currentModId = `{0}`;
+            var modInfo = {}
+            UpdateMod()
+
+            function UpdateMod() {
+                jfetch("/api/v1/mod/" + currentModId, "GET").then(res => {
+                    modInfo = res
+                    UpdateUI()
+                })
+            }
+
+            function UpdateUI() {
+                modName.innerText = modInfo.name
+                mode.innerHTML = FormatMod(modInfo, false, false)
+                f = ""
+                modInfo.files.forEach(x => {
+                    f += FormatFile(modInfo, x, false)
+                })
+                
+                first = false
+                files.innerHTML = f
+            }
+        </script>
+    </body>
+</html>

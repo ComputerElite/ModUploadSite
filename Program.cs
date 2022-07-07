@@ -27,12 +27,12 @@ namespace ModUploadSite
             if (workingDir.EndsWith("\"")) workingDir = workingDir.Substring(0, workingDir.Length - 1);
 
             MUSEnvironment.workingDir = workingDir;
+            MUSEnvironment.config = Config.LoadConfig();
             MUSEnvironment.AddVariablesDependentOnVariablesAndFixAllOtherVariables();
             if (cla.HasArgument("update"))
             {
                 Updater.UpdateNetApp(Path.GetFileName(Assembly.GetExecutingAssembly().Location), MUSEnvironment.workingDir);
             }
-            MUSEnvironment.config = Config.LoadConfig();
             if (MUSEnvironment.config.masterToken == "") MUSEnvironment.config.masterToken = RandomExtension.CreateToken();
             MUSEnvironment.config.Save();
             //Logger.SetLogFile(workingDir + "Log.log");

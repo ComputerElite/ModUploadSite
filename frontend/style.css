@@ -29,6 +29,13 @@ body {
     text-align: left;
 }
 
+.grid3 {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    column-gap: 10px;
+    row-gap: 10px;
+}
+
 .nomargintopbottom {
     margin-bottom: 0px;
     margin-top: 0;
@@ -38,6 +45,10 @@ body {
     margin-top: 0;
     margin-left: 20px;
 }
+.margintopmarginleft {
+  margin-top: 20px;
+  margin-left: 20px;
+}
 
 input {
     border-radius: var(--borderRadius);
@@ -45,6 +56,64 @@ input {
     color: var(--interactableColor);
     border: 1px solid var(--interactableColor);
     padding: 5px;
+}
+
+.center {
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.textbox {
+    border: #03cffc 1px solid;
+    visibility: hidden;
+    padding: 5px;
+    width: fit-content;
+    margin-top: 10px;
+}
+
+a {
+    color: var(--interactableColor);
+}
+
+.flashbang {
+    animation: ease-in-out flashbang 8s infinite;
+    position: absolute;
+    top: calc(50% - 40px);
+    left: calc(50% - 40px);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    box-shadow:
+      0 0 60px 30px #fff,
+      0 0 100px 60px #f0f,
+      0 0 140px 90px #0ff;
+}
+  
+@keyframes flashbang {
+    0% {
+      background-color: #00000000;
+      visibility: hidden;
+    }
+    65% {
+      background-color: #00000000;
+      visibility: hidden;
+    }
+    65.000001% {
+      background-color: #FFFFFFFF;
+      visibility: visible;
+    }
+    75% {
+      background-color: #FFFFFFFF;
+      visibility: visible;
+    }
+    85% {
+      background-color: #00000000;
+      visibility: visible;
+    }
+    100% {
+      visibility: hidden;
+    }
 }
 
 .content {

@@ -1,0 +1,48 @@
+<html>
+    <head>
+        {meta}
+        <title>My Mods - Mod upload site</title>
+    </head>
+    <body>
+        <div class="content">
+            <h1>My mods</h1>
+            <input type="button" value="Add new mod" onclick="AddMod()">
+            <div class="grid3" id="mymods">
+            </div>
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            const mymods = document.getElementById("mymods")
+
+            var mods = []
+            
+            UpdateMods()
+            function UpdateMods() {
+                jfetch("/api/v1/getmods?mymods=true").then(res => {
+                    mods = res
+                    UpdateUI()
+                })
+            }
+
+            function AddMod() {
+                tfetch("/api/v1/startmodupload", "POST").then(res => {
+                    const newModId = res
+                    tfetch("/api/v1/mod/", "POST", JSON.stringify({
+                        uploadedModId: newModId,
+                        name: "New mod " + Date.now()
+                    })).then(res => {
+                        UpdateMods()
+                    })
+                })
+            }
+
+            function UpdateUI() {
+                f = ""
+                mods.forEach(x => {
+                    f += FormatMod(x, true)
+                })
+                mymods.innerHTML = f
+            }
+        </script>
+    </body>
+</html>

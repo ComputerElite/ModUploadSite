@@ -1,0 +1,77 @@
+<html>
+    <head>
+        {meta}
+        <title>Mods - Mod upload site</title>
+    </head>
+    <body>
+        <div class="content">
+            <h1>Mods</h1>
+            <select onchange="UpdateVersions()" id="groups">
+
+            </select>
+            <select onchange="UpdateMods()" id="versions">
+
+            </select>
+            <div class="grid3" id="mods">
+
+            </div>
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            const modse = document.getElementById("mods")
+            const groupse = document.getElementById("groups")
+
+            const versionse = document.getElementById("versions")
+
+            var groups = []
+            var mods = []
+            var versions = []
+            var group = ""
+
+            function GetGroup(id) {
+                for(let i = 0; i < groups.length; i++) {
+                    if(groups[i].groupId == id) return groups[i]
+                }
+                return {}
+            }
+
+            UpdateGroups()
+            function UpdateGroups() {
+                jfetch("/api/v1/groups").then(res => {
+                    groups = res
+                    groupse.innerHTML = ""
+                    groups.forEach(x => {
+                        groupse.innerHTML += `<option value="${x.groupId}">${SafeFormat(x.name)}</option>`
+                    });
+                    UpdateVersions()
+                })
+            }
+
+            function UpdateVersions() {
+                jfetch("/api/v1/versions?group=" + groupse.value).then(res => {
+                    versions = res
+                    versionse.innerHTML = ""
+                    versions.forEach(x => {
+                        versionse.innerHTML += `<option value="${x}">${SafeFormat(x)}</option>`
+                    });
+                    UpdateMods()
+                })
+            }
+
+            function UpdateMods() {
+                jfetch(`/api/v1/getmods?group=${groupse.value}${GetGroup(groupse.value).hasVersions ? `&version=${versionse.value}` : ``}`).then(res => {
+                    mods = res
+                    UpdateUI()
+                })
+            }
+
+            function UpdateUI() {
+                f = ""
+                mods.forEach(x => {
+                    f += FormatMod(x, false)
+                })
+                modse.innerHTML = f
+            }
+        </script>
+    </body>
+</html>

@@ -16,6 +16,7 @@ namespace ModUploadSite
         public string emailPassword { get; set; } = "";
         public string emailServer { get; set; } = "";
         public long modSizeLimit { get; set; } = 104857600; // 100 MB
+        public string modFolder { get; set; } = "";
 
         public static Config LoadConfig()
         {

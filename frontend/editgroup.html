@@ -1,0 +1,74 @@
+<html>
+    <head>
+        {meta}
+        <title>Home - Mod upload site</title>
+    </head>
+    <body>
+        <div class="content">
+            <h1>Edit group</h1>
+            <div class="flex column">
+                <input type="text" id="name" placeholder="Group name">
+                <input type="text" id="description" placeholder="Group description">
+                <input type="text" id="type" placeholder="File types">
+                <input type="text" id="ids" placeholder="Population ids">
+                <input type="text" id="groupId" placeholder="group id" readonly>
+                <label>Has Versions<input type="checkbox" id="hasVersions"></label>
+                <input type="button" onclick="Save()" value="Save changes">
+                <br>
+                <br>
+                <br>
+                <br>
+                <input type="button" onclick="DeleteGroup()" value="Delete group" class="red">
+            </div>
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            const name = document.getElementById("name")
+            const description = document.getElementById("description")
+            const type = document.getElementById("type")
+            const ids = document.getElementById("ids")
+            const groupIde = document.getElementById("groupId")
+            const hasVersions = document.getElementById("hasVersions")
+
+            const groupId = params.get("groupid")
+            var groups = []
+            var group = {}
+            UpdateGroup()
+            function UpdateGroup() {
+                jfetch("/api/v1/groups/", "GET").then(res => {
+                    groups = res
+                    groups.forEach(x => {
+                        if(x.groupId == groupId) group = x
+                    });
+                    UpdateUI()
+                })
+            }
+
+            function DeleteGroup() {
+                tfetch("/api/v1/deletegroup", "POST", groupId).then(res => {
+                    location = `/groups`
+                })
+            }
+
+            function Save() {
+                
+                group.name = name.value
+                group.description = description.value
+                group.fileTypes = type.value.split("|")
+                group.populationAlternateIDs = ids.value.split("|")
+                group.hasVersions = hasVersions.checked
+
+                tfetch(`/api/v1/updategroup/`, "POST", JSON.stringify(group)).then(x => UpdateGroup())
+            }
+
+            function UpdateUI() {
+                name.value = group.name
+                groupIde.value = group.groupId
+                description.value = group.description
+                type.value = group.fileTypes.join('|')
+                ids.value = group.populationAlternateIDs.join('|')
+                hasVersions.checked = group.hasVersions
+            }
+        </script>
+    </body>
+</html>

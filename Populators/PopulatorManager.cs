@@ -11,7 +11,7 @@ namespace ModUploadSite.Populators
     {
         public static Dictionary<string, Func<UploadedMod, string, PopulationResult>> populators { get; set; } = new Dictionary<string, Func<UploadedMod, string, PopulationResult>>();
 
-        public static bool AddValidator(string extensionIncludingDot, Func<UploadedMod, string, PopulationResult> populationFunction, bool overrideExisting = true)
+        public static bool AddPopulator(string extensionIncludingDot, Func<UploadedMod, string, PopulationResult> populationFunction, bool overrideExisting = true)
         {
             extensionIncludingDot = extensionIncludingDot.ToLower();
             if (!overrideExisting && populators.ContainsKey(extensionIncludingDot)) return false;
@@ -33,7 +33,7 @@ namespace ModUploadSite.Populators
 
         public static void AddDefaultPopulators()
         {
-            AddValidator(".qmod", new Func<UploadedMod, string, PopulationResult>((mod, filePath) =>
+            AddPopulator(".qmod", new Func<UploadedMod, string, PopulationResult>((mod, filePath) =>
             {
                 return QModPopulator.PopulateQMod(mod, filePath);
             }));

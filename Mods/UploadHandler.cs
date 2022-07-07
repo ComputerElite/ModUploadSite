@@ -1,5 +1,6 @@
 ﻿using ComputerUtils.Encryption;
 using ComputerUtils.RandomExtensions;
+using ModUploadSite.Converters;
 using ModUploadSite.Mods;
 using ModUploadSite.Populators;
 using ModUploadSite.Users;
@@ -117,7 +118,15 @@ namespace ModUploadSite
             if (result.valid)
             {
                 // Add file to mod if file is valid
-                mod.files.Add(new UploadedModFile(fileHash, filename, new FileInfo(filePath).Length));
+                UploadedModFile modfile = new UploadedModFile(fileHash, filename, new FileInfo(filePath).Length);
+                mod.files.Add(modfile);
+
+                ConversionResult conversionResult = ConversionManager.ConvertUploadedModFile(mod, modfile);
+                if(conversionResult.converted)
+                {
+                    mod = conversionResult.mod;
+                }
+
                 MongoDBInteractor.UpdateMod(mod);
             }
             return new GenericRequestResponse(result.valid ? 200 : 400, result.msg);

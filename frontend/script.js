@@ -1,3 +1,99 @@
+const params = new URLSearchParams(window.location.search)
+
+
+function FormatGroup(group, showEditButton = false) {
+    return ` <div class="card">
+        <h3 class="nomargintopbottom">${SafeFormat(group.name)}</h3>
+        <div class="nomargintopmarginleft">${group.description}</div>
+        ${showEditButton ? `<input onclick="EditGroup('${group.groupId}')" type="button" value="Edit">`: ``}
+    </div>`
+}
+
+function FormatFile(mod, file, showEditButton = false) {
+    return ` <div class="card">
+        <h3 class="nomargintopbottom">${SafeFormat(file.filename)}</h3>
+        <div class="nomargintopmarginleft">${file.sHA256}</div>
+        <div class="nomargintopmarginleft">${file.sizeString}</div>
+        ${showEditButton ? `<input onclick="RemoveFile('${file.sHA256}')" type="button" value="Delete" class="red">`: ``}
+        <input onclick="DownloadFile('${mod.uploadedModId}', '${file.sHA256}')" type="button" value="Download">
+        ${file.supportsModInfoPopulation && showEditButton ? `<input onclick="PopulateModInfo('${file.sHA256}')" type="button" value="Populate mod info">` : ""}
+    </div>`
+}
+
+function FormatMod(mod, showEditButton = false, otherButtons = true) {
+    return `<div class="card">
+                <h3 class="nomargintopbottom">${SafeFormat(mod.name)}</h3>
+                <div class="nomargintopmarginleft">V. ${SafeFormat(mod.version)}</div>
+                <div class="nomargintopmarginleft">for version ${SafeFormat(mod.groupVersion)}</div>
+                <div class="nomargintopmarginleft">by ${SafeFormat(GetPackageName(mod.author))}</div>
+                ${mod.author != mod.uploader ? `<div class="nomargintopmarginleft" style="font-size: .8em;">uploaded by ${SafeFormat(mod.uploader)}</div>` : ``}
+                <div class="margintopmarginleft">${SafeFormat(mod.description)}</div>
+                ${otherButtons ? `<input onclick="Download('${mod.uploadedModId}')" type="button" value="Download">
+                <input onclick="Details('${mod.uploadedModId}')" type="button" value="Details">` : ``}
+                ${showEditButton ? `<input onclick="Edit('${mod.uploadedModId}')" type="button" value="Edit">` : ``}
+            </div>`
+}
+
+function EditGroup(groupId) {
+    location = `/editgroup?groupid=${groupId}`
+}
+
+function DeleteGroup(groupId) {
+    location = `/editgroup?groupid=${groupId}`
+}
+
+function DownloadFile(modId, fileId) {
+    window.open(`/cdn/${modId}/${fileId}`, "_blank")
+}
+
+function GetMod(modId) {
+    for(let i = 0; i < mods.length; i++) {
+        if(mods[i].uploadedModId == modId) return mods[i]
+    }
+}
+
+function Download(modId) {
+    var mod = GetMod(modId)
+    mod.files.forEach(x => {
+        DownloadFile(mod.uploadedModId, x.sHA256)
+    })
+}
+
+function Details(modId) {
+    location = `/mod/${modId}`
+}
+
+function Edit(modId) {
+    location = `/upload?modid=${modId}`
+}
+
+function GetPackageName(x) {
+    return x
+}
+
+function TextBoxError(id, text) {
+    ChangeTextBoxProperty(id, "#EE0000", text)
+}
+
+function TextBoxText(id, text) {
+    ChangeTextBoxProperty(id, "#03cffc", text)
+}
+
+function TextBoxGood(id, text) {
+    ChangeTextBoxProperty(id, "#00EE00", text)
+}
+
+function HideTextBox(id) {
+    document.getElementById(id).style.visibility = "hidden"
+}
+
+function ChangeTextBoxProperty(id, color, innerHtml) {
+    var text = document.getElementById(id)
+    text.style.visibility = "visible"
+    text.style.border = color + " 1px solid"
+    text.innerHTML = innerHtml
+}
+
 function SafeFormat(text) {
     var d = document.createElement("div")
     d.innerText = text
@@ -20,16 +116,18 @@ function ifetch(url, asjson = true, method = "GET", body = "") {
                 headers: {
                     "token": localStorage.token
                 }
-            }).then(res => {
-                res.text().then(res => {
+            }).then(r => {
+                r.text().then(res => {
                     if(asjson) {
                         try {
-                            resolve(JSON.parse(res))
+                            if(r.status != 200) reject(JSON.parse(res))
+                            else resolve(JSON.parse(res))
                         } catch(e) {
                             reject(e)
                         }
                     } else {
-                        resolve(res)
+                        if(r.status != 200) reject(res)
+                        else resolve(res)
                     }
                 })
             })
@@ -40,16 +138,19 @@ function ifetch(url, asjson = true, method = "GET", body = "") {
                 headers: {
                     "token": localStorage.token
                 }
-            }).then(res => {
-                res.text().then(res => {
+            }).then(r => {
+                
+                r.text().then(res => {
                     if(asjson) {
                         try {
-                            resolve(JSON.parse(res))
+                            if(r.status != 200) reject(JSON.parse(res))
+                            else resolve(JSON.parse(res))
                         } catch(e) {
                             reject(e)
                         }
                     } else {
-                        resolve(res)
+                        if(r.status != 200) reject(res)
+                        else resolve(res)
                     }
                 })
             })

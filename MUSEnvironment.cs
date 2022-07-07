@@ -18,8 +18,14 @@ namespace ModUploadSite
             if (!workingDir.EndsWith(Path.DirectorySeparatorChar)) workingDir += Path.DirectorySeparatorChar;
             if (workingDir == Path.DirectorySeparatorChar.ToString()) workingDir = AppDomain.CurrentDomain.BaseDirectory;
             dataDir = workingDir + "data" + Path.DirectorySeparatorChar;
+            if (config.modFolder == "")
+            {
+                config.modFolder = dataDir + "mods";
+                config.Save();
+            }
             FileManager.CreateDirectoryIfNotExisting(workingDir);
             FileManager.CreateDirectoryIfNotExisting(dataDir);
+            FileManager.CreateDirectoryIfNotExisting(config.modFolder + Path.DirectorySeparatorChar + "temp");
         }
     }
 }

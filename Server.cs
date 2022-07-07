@@ -1,5 +1,6 @@
 ﻿using ComputerUtils.Logging;
 using ComputerUtils.Webserver;
+using ModUploadSite.Converters;
 using ModUploadSite.Mods;
 using ModUploadSite.Populators;
 using ModUploadSite.Users;
@@ -62,6 +63,7 @@ namespace ModUploadSite
             MongoDBInteractor.Initialize();
             PopulatorManager.AddDefaultPopulators();
             ValidationManager.AddDefaultValidators();
+            ConversionManager.AddDefaultConverters();
             UserSystem.Initialize();
 
             // cdn

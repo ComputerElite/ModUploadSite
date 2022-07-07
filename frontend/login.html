@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {meta}
+        <title>Login - ModUploadSite</title>
+    </head>
+    <body>
+        <div>
+            <h1 style="text-align: center;">Login</h1>
+            <div class="flex center">
+                <h4>username</h4>
+                <input type="text" id="username" style="width: 200px;"></input>
+                <h4>password</h4>
+                <input type="password" id="password" style="width: 200px;"></input>
+                <a href="/register">Not yet a user? Register here</a>
+                <a style="font-size: .8em; margin-top: 10px;" href="/requestpasswordreset">Forgot password?</a>
+                <br />
+                <input type="button" style="margin-top: 10px;" onclick="Login()" value="Login">
+                <div class="textBox" id="text">
+                </div>
+            </div>
+            
+        </div>
+        <script src="/script.js"></script>
+        <script>
+            var token = localStorage.token;
+            const username = document.getElementById("username")
+            const password = document.getElementById("password")
+
+            if(token) {
+                jfetch("/api/v1/amiloggedin").then(res => {
+                    if(res == "true") {
+                        TextBoxText("text", "You are already logged in")
+                    } else {
+                        TextBoxError("text", "Your session has expired. Please login again.")
+                    }
+                }).catch(err => {
+                    TextBoxError("text", err)
+                })
+            }
+
+            function Login() {
+                if (username.value == "" || password.value == "") {
+                    TextBoxError("text", "Input a username and password")
+                }
+                else {
+                    tfetch("/api/v1/login", "POST", JSON.stringify({
+                        username: username.value,
+                        password: password.value
+                    })).then(res => {
+                        localStorage.token = res
+                        window.open("/", "_self")
+                    }).catch(err => {
+                        TextBoxError("text", err)
+                    })
+                }
+            }
+        </script>
+    </body>
+</html>
