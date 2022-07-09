@@ -18,9 +18,9 @@
                 <input type="button" onclick="UploadFile()" value="Upload a file">
                 <div style="width: 90%; background-color: var(--highlightBackgroundColor); height: 10px;"><div style="background-color: var(--highlightColor); height: 100%; width: 0%;" id="progress"></div></div>
                 <input type="button" onclick="Save()" value="Save changes">
-                
             </div>
             <h3>Uploaded files</h3>
+            <div class="textbox" id="text"></div>
             <div class="flex" id="files">
             </div>
             <input type="text" placeholder="put in mod name for deletion confirmation" id="deleteMod">
@@ -78,6 +78,8 @@
             UpdateMod()
 
             function UploadFile() {
+                HideTextBox("text")
+                Save()
                 var input = document.createElement("input")
                 input.setAttribute("type", "file")
                 input.onchange = function (e) {
@@ -92,6 +94,9 @@
                             if (evt.lengthComputable) {
                                 var percentComplete = evt.loaded / evt.total;
                                 percentComplete = parseInt(percentComplete * 100);
+                                if(percentComplete >= 100) {
+                                    TextBoxText("text", "Processing...")
+                                }
                                 progress.style.width = percentComplete + "%"
                             }
                         }, false);
@@ -99,6 +104,14 @@
                             progress.style.width = "0%"
                             UpdateMod()
                         }
+                        xhr.onreadystatechange = function () {
+                            if (this.readyState == 4) {
+                                HideTextBox("text")
+                                if(this.status == 400) {
+                                    TextBoxError("text", this.responseText)
+                                }
+                            }
+                        };
                         xhr.open("POST", "/api/v1/uploadmodfile/" + currentModId + "?filename=" + fileName)
                         xhr.setRequestHeader("token", localStorage.token)
                         xhr.send(reader.result)
@@ -116,7 +129,7 @@
                 })
             }
 
-            function Save() {
+            function Save(send = true) {
                 modInfo.name = name.value
                 modInfo.modId = modId.value
                 modInfo.version = version.value
@@ -124,7 +137,7 @@
                 modInfo.group = groupse.value
                 modInfo.description = description.value
                 modInfo.groupVersion = groupVersion.value
-                tfetch("/api/v1/mod/", "POST", JSON.stringify(modInfo))
+                if(send) tfetch("/api/v1/mod/", "POST", JSON.stringify(modInfo))
             }
 
             function UpdateUI() {

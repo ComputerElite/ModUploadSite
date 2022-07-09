@@ -13,6 +13,7 @@
                 <input type="text" id="ids" placeholder="Population ids">
                 <input type="text" id="groupId" placeholder="group id" readonly>
                 <label>Has Versions<input type="checkbox" id="hasVersions"></label>
+                <label>Require approval<input type="checkbox" id="requireApproval"></label>
                 <input type="button" onclick="Save()" value="Save changes">
                 <br>
                 <br>
@@ -29,6 +30,7 @@
             const ids = document.getElementById("ids")
             const groupIde = document.getElementById("groupId")
             const hasVersions = document.getElementById("hasVersions")
+            const requireApproval = document.getElementById("requireApproval")
 
             const groupId = params.get("groupid")
             var groups = []
@@ -57,6 +59,7 @@
                 group.fileTypes = type.value.split("|")
                 group.populationAlternateIDs = ids.value.split("|")
                 group.hasVersions = hasVersions.checked
+                group.requireApproval = requireApproval.checked
 
                 tfetch(`/api/v1/updategroup/`, "POST", JSON.stringify(group)).then(x => UpdateGroup())
             }
@@ -67,6 +70,7 @@
                 description.value = group.description
                 type.value = group.fileTypes.join('|')
                 ids.value = group.populationAlternateIDs.join('|')
+                requireApproval.checked = group.requireApproval
                 hasVersions.checked = group.hasVersions
             }
         </script>

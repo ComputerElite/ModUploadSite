@@ -14,13 +14,34 @@ function FormatFile(mod, file, showEditButton = false) {
         <h3 class="nomargintopbottom">${SafeFormat(file.filename)}</h3>
         <div class="nomargintopmarginleft">${file.sHA256}</div>
         <div class="nomargintopmarginleft">${file.sizeString}</div>
+        ${GetPreview(mod.uploadedModId, file)}
         ${showEditButton ? `<input onclick="RemoveFile('${file.sHA256}')" type="button" value="Delete" class="red">`: ``}
         <input onclick="DownloadFile('${mod.uploadedModId}', '${file.sHA256}')" type="button" value="Download">
         ${file.supportsModInfoPopulation && showEditButton ? `<input onclick="PopulateModInfo('${file.sHA256}')" type="button" value="Populate mod info">` : ""}
     </div>`
 }
 
+function GetPreview(modId, modFile) {
+    var ext = modFile.filename.toLowerCase();
+    var url = `/cdn/${modId}/${modFile.sHA256}`
+    if(ext.endsWith(".png") || ext.endsWith(".jpg") || ext.endsWith(".jpeg") || ext.endsWith(".gif")) {
+        return `<img src="${url}"><br>`
+    }
+    if(ext.endsWith(".ogg") ||ext.endsWith(".mp3") || ext.endsWith(".wav")) {
+        return `<audio src="${url}" controls></audio><br>`
+    }
+    if(ext.endsWith(".mp4") ||ext.endsWith(".webm") || ext.endsWith(".mkv")) {
+        return `<video src="${url}" controls></video><br>`
+    }
+    return ``
+}
+
 function FormatMod(mod, showEditButton = false, otherButtons = true) {
+    var preview = ``
+    for(let i = 0; i < mod.files.length; i++) {
+        preview = GetPreview(mod.uploadedModId, mod.files[i])
+        if(preview) break;
+    }
     return `<div class="card">
                 <h3 class="nomargintopbottom">${SafeFormat(mod.name)}</h3>
                 <div class="nomargintopmarginleft">V. ${SafeFormat(mod.version)}</div>
@@ -28,6 +49,7 @@ function FormatMod(mod, showEditButton = false, otherButtons = true) {
                 <div class="nomargintopmarginleft">by ${SafeFormat(GetPackageName(mod.author))}</div>
                 ${mod.author != mod.uploader ? `<div class="nomargintopmarginleft" style="font-size: .8em;">uploaded by ${SafeFormat(mod.uploader)}</div>` : ``}
                 <div class="margintopmarginleft">${SafeFormat(mod.description)}</div>
+                ${preview}
                 ${otherButtons ? `<input onclick="Download('${mod.uploadedModId}')" type="button" value="Download">
                 <input onclick="Details('${mod.uploadedModId}')" type="button" value="Details">` : ``}
                 ${showEditButton ? `<input onclick="Edit('${mod.uploadedModId}')" type="button" value="Edit">` : ``}

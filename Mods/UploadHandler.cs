@@ -24,17 +24,7 @@ namespace ModUploadSite
             UploadedMod mod = MongoDBInteractor.GetMod(modId);
             if (!IsUserOwnerOfMod(token, mod)) return new GenericRequestResponse(403, "You do not own this mod. Modifications are not allowed");
             // Check if file exists
-            string filePath = PathManager.GetModFile(modId, fileHash);
-            if (!File.Exists(filePath)) return new GenericRequestResponse(400, "ModFile does not exist");
-            // Delete file from Disk
-            File.Delete(filePath);
-            // Remove file from mod
-            for(int i = 0; i < mod.files.Count; i++)
-            {
-                if (mod.files[i].sHA256 != fileHash) continue;
-                mod.files.RemoveAt(i);
-                i--;
-            }
+            mod.RemoveModFile(fileHash);
             MongoDBInteractor.UpdateMod(mod);
             return new GenericRequestResponse(200, "File removed");
         }
@@ -110,11 +100,15 @@ namespace ModUploadSite
             string fileHash = Hasher.GetSHA256OfByteArray(file);
             // Check if file already exists
             string filePath = PathManager.GetModFile(modId, fileHash);
-            if (File.Exists(filePath)) return new GenericRequestResponse(400, "File already exists");
+            if (File.Exists(filePath)) mod.RemoveModFile(fileHash);
             // Save file
             File.WriteAllBytes(filePath, file);
 
+            UploadedModGroup group = MongoDBInteractor.GetGroup(mod.group);
+
             ValidationResult result = ValidationManager.ValidateFile(filename, filePath);
+            bool isAllowed = false;
+            if (group != null && group.fileTypes.Contains(Path.GetExtension(filename).ToLower())) isAllowed = true;
             if (result.valid)
             {
                 // Add file to mod if file is valid
@@ -125,10 +119,27 @@ namespace ModUploadSite
                 if(conversionResult.converted)
                 {
                     mod = conversionResult.mod;
+                    if (group != null && group.fileTypes.Contains(conversionResult.to.ToLower()))
+                    {
+                        isAllowed = true;
+                    } else if(!isAllowed)
+                    {
+                        mod.RemoveModFile(conversionResult.file.sHA256);
+                    }
                 }
-
-                MongoDBInteractor.UpdateMod(mod);
+            } else mod.RemoveModFile(fileHash);
+            if(!isAllowed)
+            {
+                result.valid = false;
+                result.msg = "File type not allowed." + (group != null ? " Please use any of: " + String.Join(", ", group.fileTypes) : "");
+                mod.RemoveModFile(fileHash);
             }
+            if(group == null)
+            {
+                result.valid = false;
+                result.msg = "This group does not exist. Please select a group first and save your changes before uploading a file";
+            }
+            MongoDBInteractor.UpdateMod(mod);
             return new GenericRequestResponse(result.valid ? 200 : 400, result.msg);
         }
 

@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using ComputerUtils.Logging;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,5 +26,21 @@ namespace ModUploadSite.Mods
         public string modId { get; set; } = "";
         public List<string> links { get; set; } = new List<string>();
         public List<UploadedModFile> files { get; set; } = new List<UploadedModFile>();
+
+        public void RemoveModFile(string fileHash)
+        {
+            string filePath = PathManager.GetModFile(uploadedModId, fileHash);
+            Logger.Log(filePath);
+            if (File.Exists(filePath)) File.Delete(filePath);
+
+            for (int i = 0; i < files.Count; i++)
+            {
+                if (files[i].sHA256 == fileHash)
+                {
+                    files.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 }

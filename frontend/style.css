@@ -17,6 +17,10 @@ body {
     --darkenColor: #222222BB;
 }
 
+img {
+    width: 100%;
+}
+
 .red {
     color: var(--red);
     border-color: var(--red);
@@ -27,6 +31,10 @@ body {
     background-color: var(--darkenColor);
     padding: 10px;
     text-align: left;
+}
+
+.margin-top {
+    margin-top: 30px;
 }
 
 .grid3 {

@@ -36,19 +36,7 @@ namespace ModUploadSite.Converters
             string extension = Path.GetExtension(file.filename).ToLower();
             if (!convertors.ContainsKey(extension)) return new ConversionResult(false, false, "", "", "No conversion possible", null);
             ConversionResult res = convertors[extension].Invoke(mod, file);
-            if(res.converted && res.deleteOld)
-            {
-                // Todo, remove old file from mod
-                File.Delete(PathManager.GetModFile(mod.uploadedModId, file.sHA256));
-                for(int i = 0; i < mod.files.Count; i++)
-                {
-                    if (mod.files[i].sHA256 == file.sHA256)
-                    {
-                        mod.files.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
+            if(res.converted && res.deleteOld) mod.RemoveModFile(file.sHA256);
             if(res.converted)
             {
                 mod.files.Add(res.file);
