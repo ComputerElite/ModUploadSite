@@ -48,6 +48,7 @@
             }
 
             function UpdateVersions() {
+                versionse.style.visibility = GetGroup(groupse.value).hasVersions ? "visible" : "hidden"
                 jfetch("/api/v1/versions?group=" + groupse.value).then(res => {
                     versions = res
                     versionse.innerHTML = ""
