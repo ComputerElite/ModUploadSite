@@ -167,9 +167,9 @@ namespace ModUploadSite
                 HandleGenericResponse(request, UploadHandler.CreateModUploadSession(GetToken(request)));
                 return true;
             }), true, true, true);
-            server.AddRoute("POST", "/api/v1/publishmod/", new Func<ServerRequest, bool>(request =>
+            server.AddRoute("POST", "/api/v1/updatemodstatus/", new Func<ServerRequest, bool>(request =>
             {
-                HandleGenericResponse(request, UploadHandler.PublishMod(request.pathDiff, GetToken(request)));
+                HandleGenericResponse(request, UploadHandler.UpdateModStatus(request.pathDiff, request.bodyString, GetToken(request)));
                 return true;
             }), true, true, true);
             server.AddRoute("GET", "/api/v1/mod/", new Func<ServerRequest, bool>(request =>

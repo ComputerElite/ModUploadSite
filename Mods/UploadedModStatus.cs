@@ -8,9 +8,9 @@ namespace ModUploadSite.Mods
 {
     public enum UploadedModStatus
     {
-        Unpublished,
-        Pending,
-        Approved,
-        Declined
+        Unpublished = 0,
+        Pending = 1,
+        Approved = 2,
+        Declined = 3
     }
 }

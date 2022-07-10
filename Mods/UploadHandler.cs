@@ -1,4 +1,5 @@
 ﻿using ComputerUtils.Encryption;
+using ComputerUtils.Logging;
 using ComputerUtils.RandomExtensions;
 using ModUploadSite.Converters;
 using ModUploadSite.Mods;
@@ -40,6 +41,7 @@ namespace ModUploadSite
             UploadedMod cmod = MongoDBInteractor.GetMod(mod.uploadedModId);
             if (!IsUserOwnerOfMod(token, cmod)) return new GenericRequestResponse(403, "You do not own this mod. Modifications are not allowed");
             mod.uploader = cmod.uploader;
+            mod.status = cmod.status;
             if (MongoDBInteractor.GetModGroups().FirstOrDefault(x => x.groupId == mod.group) == null && mod.group != "") return new GenericRequestResponse(400, "This group does not exist. Please put in a group id");
             MongoDBInteractor.UpdateMod(mod);
             return new GenericRequestResponse(200, "Updated mod");
@@ -57,8 +59,12 @@ namespace ModUploadSite
 
         public static bool IsUserOwnerOfMod(string token, UploadedMod mod)
         {
-            User u = MongoDBInteractor.GetUserByToken(token);
-            if(u == null) return false;
+            return IsUserOwnerOfMod(MongoDBInteractor.GetUserByToken(token), mod);
+        }
+
+        public static bool IsUserOwnerOfMod(User u, UploadedMod mod)
+        {
+            if (u == null) return false;
             return u.username == mod.uploader;
         }
 
@@ -158,18 +164,38 @@ namespace ModUploadSite
             return new GenericRequestResponse(200, newMod.uploadedModId);
         }
 
-        public static GenericRequestResponse PublishMod(string modId, string token)
+        public static GenericRequestResponse UpdateModStatus(string modId, string status, string token)
         {
             if (!IdValidator.IsIdValid(modId)) return new GenericRequestResponse(400, "ModId is not valid");
-
-            // Check if user is owner of mod
+            // Get User
+            User u = MongoDBInteractor.GetUserByToken(token);
+            // Check if user is owner of mod or allowed to edit
             UploadedMod mod = MongoDBInteractor.GetMod(modId);
-            if (!IsUserOwnerOfMod(token, mod)) return new GenericRequestResponse(403, "You do not own this mod. Modifications are not allowed");
+            if (!IsUserOwnerOfMod(u, mod) && !u.HasPermission(UserPermission.ApproveAndDeclineMods)) return new GenericRequestResponse(403, "You are not allowed to change this mods status");
+
+            UploadedModStatus newModStatus;
+            try
+            {
+                int s = Convert.ToInt32(status);
+                newModStatus = (UploadedModStatus)s;
+            } catch
+            {
+                return new GenericRequestResponse(400, "Status must be an int");
+            }
+            Logger.Log(status);
+            UploadedModGroup group = MongoDBInteractor.GetGroup(mod.group);
+            if(newModStatus == UploadedModStatus.Approved || newModStatus == UploadedModStatus.Declined)
+            {
+                if(!u.HasPermission(UserPermission.ApproveAndDeclineMods) && group.requireApproval)
+                {
+                    return new GenericRequestResponse(403, "You are not allowed to approve or decline mods");
+                }
+            }
 
             // Get mod and set state to Pending
-            mod.status = UploadedModStatus.Pending;
+            mod.status = newModStatus;
             MongoDBInteractor.UpdateMod(mod);
-            return new GenericRequestResponse(200, "Mod state set to Pending");
+            return new GenericRequestResponse(200, "Mod state set to " + Enum.GetName(mod.status));
         }
     }
 }

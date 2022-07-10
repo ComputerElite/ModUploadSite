@@ -10,14 +10,17 @@
                 <input type="text" id="name" placeholder="Mod name">
                 <input type="text" id="modId" placeholder="Mod id">
                 <input type="text" id="version" placeholder="version">
+                <textarea type="text" id="description" placeholder="Mod description"></textarea>
                 <input type="text" id="author" placeholder="author(s)">
                 <label>Group <select id="groups"></select></label>
-                <input type="text" id="description" placeholder="Mod description">
                 <input type="text" id="groupVersion" placeholder="Game version">
                 <input type="text" id="uploadedModId" placeholder="Internal Mod id" readonly>
                 <input type="button" onclick="UploadFile()" value="Upload a file">
-                <div style="width: 90%; background-color: var(--highlightBackgroundColor); height: 10px;"><div style="background-color: var(--highlightColor); height: 100%; width: 0%;" id="progress"></div></div>
+                <div style="width: 100%; background-color: var(--highlightBackgroundColor); height: 10px;"><div style="background-color: var(--highlightColor); height: 100%; width: 0%;" id="progress"></div></div>
                 <input type="button" onclick="Save()" value="Save changes">
+
+                <input type="button" id="send" class="margin-top" onclick="Publish()" value="Send mod for approval">
+                <input type="button" id="revoke" class="orange" onclick="UnPublish()" value="Unpublish mod">
             </div>
             <h3>Uploaded files</h3>
             <div class="textbox" id="text"></div>
@@ -37,6 +40,18 @@
             const groupVersion = document.getElementById("groupVersion")
             const uploadedModId = document.getElementById("uploadedModId")
             const files = document.getElementById("files")
+            const send = document.getElementById("send")
+            const revoke = document.getElementById("revoke")
+
+            function Publish() {
+                Save()
+                UpdateModStatus(GetGroup(modInfo.group).requireApproval ? "1" : "2", modInfo.uploadedModId)
+            }
+
+            
+            function UnPublish() {
+                UpdateModStatus("0", modInfo.uploadedModId)
+            }
 
             function DeleteMod() {
                 if(modInfo.name == document.getElementById("deleteMod").value) {
@@ -60,6 +75,23 @@
                 if(modInfo.group) {
                     groupse.value = modInfo.group
                 }
+            }
+
+            function GetGroup(id) {
+                for(let i = 0; i < groups.length; i++) {
+                    if(groups[i].groupId == id) return groups[i]
+                }
+                return {}
+            }
+
+            function UpdatePublishButton() {
+                var g = GetGroup(groupse.value)
+                send.value = g.requireApproval ? "Send mod for approval" : "Publish mod"
+                version.style.display = g.hasVersions ? "block" : "none"
+            }
+
+            groupse.onchange = () => {
+                UpdatePublishButton()
             }
 
             function RemoveFile(sha256) {
@@ -137,7 +169,13 @@
                 modInfo.group = groupse.value
                 modInfo.description = description.value
                 modInfo.groupVersion = groupVersion.value
-                if(send) tfetch("/api/v1/mod/", "POST", JSON.stringify(modInfo))
+                TextBoxText("text", "Saving...")
+                if(send) tfetch("/api/v1/mod/", "POST", JSON.stringify(modInfo)).then(res => {
+                    TextBoxGood("text", "Saved!")
+                    setTimeout(() => {
+                        HideTextBox("text")
+                    }, 3000);
+                })
             }
 
             function UpdateUI() {
@@ -154,6 +192,7 @@
                     f += FormatFile(modInfo, x, true)
                 })
                 files.innerHTML = f
+                UpdatePublishButton()
             }
         </script>
     </body>

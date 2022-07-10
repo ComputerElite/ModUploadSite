@@ -9,6 +9,20 @@ function FormatGroup(group, showEditButton = false) {
     </div>`
 }
 
+/*
+Unpublished = 0,
+Pending = 1,
+Approved = 2,
+Declined = 3
+*/
+function UpdateModStatus(newStatus, modId) {
+    tfetch(`/api/v1/updatemodstatus/${modId}`, "POST", newStatus).then(res => {
+        TextBoxGood("text", res)
+    }).catch(res => {
+        TextBoxError("text", res)
+    })
+}
+
 function FormatFile(mod, file, showEditButton = false) {
     return ` <div class="card">
         <h3 class="nomargintopbottom">${SafeFormat(file.filename)}</h3>
@@ -36,6 +50,15 @@ function GetPreview(modId, modFile) {
     return ``
 }
 
+function GetModStatusFromInt(s) {
+    switch(s) {
+        case 0: return "Unpublished"
+        case 1: return "Pending"
+        case 2: return "Approved"
+        case 3: return "Declined"
+    }
+}
+
 function FormatMod(mod, showEditButton = false, otherButtons = true) {
     var preview = ``
     for(let i = 0; i < mod.files.length; i++) {
@@ -44,8 +67,9 @@ function FormatMod(mod, showEditButton = false, otherButtons = true) {
     }
     return `<div class="card">
                 <h3 class="nomargintopbottom">${SafeFormat(mod.name)}</h3>
-                <div class="nomargintopmarginleft">V. ${SafeFormat(mod.version)}</div>
-                <div class="nomargintopmarginleft">for version ${SafeFormat(mod.groupVersion)}</div>
+                ${showEditButton ? `<b>${GetModStatusFromInt(mod.status)}</b>` : ``}
+                ${mod.version ? `<div class="nomargintopmarginleft">V. ${SafeFormat(mod.version)}</div>` : ``}
+                ${mod.groupVersion ? `<div class="nomargintopmarginleft">for version ${SafeFormat(mod.groupVersion)}</div>` : ``}
                 <div class="nomargintopmarginleft">by ${SafeFormat(GetPackageName(mod.author))}</div>
                 ${mod.author != mod.uploader ? `<div class="nomargintopmarginleft" style="font-size: .8em;">uploaded by ${SafeFormat(mod.uploader)}</div>` : ``}
                 <div class="margintopmarginleft">${SafeFormat(mod.description)}</div>

@@ -14,7 +14,13 @@ body {
     --borderRadius: 5px;
     --red: #eb0303;
     --redDark: #ab0d0e;
+    --orange: #ff8344;
     --darkenColor: #222222BB;
+}
+
+.orange {
+    color: var(--orange);
+    border: 1px solid var(--orange);
 }
 
 img {
@@ -58,7 +64,7 @@ img {
   margin-left: 20px;
 }
 
-input {
+input, textarea{
     border-radius: var(--borderRadius);
     background-color: var(--backgroundColor);
     color: var(--interactableColor);

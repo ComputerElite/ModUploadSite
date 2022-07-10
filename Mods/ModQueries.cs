@@ -14,6 +14,12 @@ namespace ModUploadSite.Mods
         public static GenericRequestResponse GetMods(ServerRequest request, string token)
         {
             User u = MongoDBInteractor.GetUserByToken(token);
+            List<int> statuses = new List<int> { 2 };
+            if(request.queryString.Get("status") != null)
+            {
+                statuses = request.queryString.Get("status").Split(',').ToList().ConvertAll(x => Convert.ToInt32(x));
+            }
+
             if(request.queryString.Get("mymods") != null)
             {
                 // Return mods by uploader
