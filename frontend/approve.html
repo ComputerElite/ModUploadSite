@@ -1,7 +1,7 @@
 <html>
     <head>
         {meta}
-        <title>Mods - Mod upload site</title>
+        <title>Approve - Mod upload site</title>
     </head>
     <body>
         <div class="content">
@@ -11,6 +11,12 @@
             </select>
             <select onchange="UpdateMods()" id="versions">
 
+            </select>
+            <select onchange="UpdateMods()" id="status">
+                <option value="0">Unpublished</option>
+                <option value="1">Pending</option>
+                <option value="2">Approved</option>
+                <option value="3">Declined</option>
             </select>
             <div class="grid3" id="mods">
 
@@ -24,7 +30,7 @@
             const versionse = document.getElementById("versions")
 
             
-            const statuses = params.get("status") == true ? params.get("status") : "2"
+            const status = document.getElementById("status")
 
             var groups = []
             var mods = []
@@ -69,7 +75,7 @@
             }
 
             function UpdateMods() {
-                jfetch(`/api/v1/getmods?group=${groupse.value}${GetGroup(groupse.value).hasVersions ? `&version=${versionse.value}` : ``}&status=${statuses}`).then(res => {
+                jfetch(`/api/v1/getmods?group=${groupse.value}${GetGroup(groupse.value).hasVersions ? `&version=${versionse.value}` : ``}&status=${status.value}`).then(res => {
                     mods = res
                     UpdateUI()
                 })
@@ -78,7 +84,7 @@
             function UpdateUI() {
                 f = ""
                 mods.forEach(x => {
-                    f += FormatMod(x, false, true)
+                    f += FormatMod(x, false, true, true)
                 })
                 if(f == "") f = noMods
                 modse.innerHTML = f

@@ -23,6 +23,10 @@ body {
     border: 1px solid var(--orange);
 }
 
+.hidden {
+    display: none;
+}
+
 img {
     width: 100%;
 }
@@ -32,9 +36,14 @@ img {
     border-color: var(--red);
 }
 
+.bigish {
+    font-size: 1.25em;
+}
+
 .card {
     border-radius: var(--borderRadius);
     background-color: var(--darkenColor);
+    border: 1px solid var(--interactableColor);
     padding: 10px;
     text-align: left;
 }
@@ -54,6 +63,9 @@ img {
     margin-bottom: 0px;
     margin-top: 0;
 }
+b {
+    color: var(--interactableColor);
+}
 
 .nomargintopmarginleft {
     margin-top: 0;
@@ -64,7 +76,7 @@ img {
   margin-left: 20px;
 }
 
-input, textarea{
+input, textarea, select {
     border-radius: var(--borderRadius);
     background-color: var(--backgroundColor);
     color: var(--interactableColor);

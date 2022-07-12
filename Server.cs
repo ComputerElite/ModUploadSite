@@ -186,7 +186,7 @@ namespace ModUploadSite
             }), false, true, true);
             server.AddRoute("DELETE", "/api/v1/mod/", new Func<ServerRequest, bool>(request =>
             {
-                HandleGenericResponse(request, UploadHandler.HandleDeleteMod(request.bodyString, GetToken(request)));
+                HandleGenericResponse(request, UploadHandler.HandleDeleteMod(request.pathDiff, GetToken(request)));
                 return true;
             }), false, true, true);
             server.AddRoute("GET", "/api/v1/getmods", new Func<ServerRequest, bool>(request =>
@@ -207,6 +207,7 @@ namespace ModUploadSite
             server.AddRouteFile("/upload", frontend + "upload.html", replace, true, true, true);
             server.AddRouteFile("/mymods", frontend + "mymods.html", replace, true, true, true);
             server.AddRouteFile("/mods", frontend + "mods.html", replace, true, true, true);
+            server.AddRouteFile("/approve", frontend + "approve.html", replace, true, true, true);
             server.AddRoute("GET", "/mod/", new Func<ServerRequest, bool>(request =>
             {
                 request.SendStringReplace(File.ReadAllText(frontend + "mod.html").Replace("{0}", request.pathDiff), "text/html", 200, replace);

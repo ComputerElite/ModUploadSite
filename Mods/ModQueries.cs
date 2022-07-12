@@ -23,15 +23,16 @@ namespace ModUploadSite.Mods
             if(request.queryString.Get("mymods") != null)
             {
                 // Return mods by uploader
-                return new GenericRequestResponse(200, JsonSerializer.Serialize(MongoDBInteractor.GetModsByUser(u.username)));
+                if (request.queryString.Get("status") == null) statuses = new List<int> { 0, 1, 2, 3 };
+                return new GenericRequestResponse(200, JsonSerializer.Serialize(MongoDBInteractor.GetModsByUser(u.username, statuses)));
             }
             if (request.queryString.Get("group") != null && request.queryString.Get("version") != null)
             {
-                return new GenericRequestResponse(200, JsonSerializer.Serialize(MongoDBInteractor.GetModsOfGroupAndVersion(request.queryString.Get("group"), request.queryString.Get("version"))));
+                return new GenericRequestResponse(200, JsonSerializer.Serialize(MongoDBInteractor.GetModsOfGroupAndVersion(request.queryString.Get("group"), request.queryString.Get("version"), statuses)));
             }
             if (request.queryString.Get("group") != null)
             {
-                return new GenericRequestResponse(200, JsonSerializer.Serialize(MongoDBInteractor.GetModsOfGroup(request.queryString.Get("group"))));
+                return new GenericRequestResponse(200, JsonSerializer.Serialize(MongoDBInteractor.GetModsOfGroup(request.queryString.Get("group"), statuses)));
             }
             return new GenericRequestResponse(200, "[]");
         }

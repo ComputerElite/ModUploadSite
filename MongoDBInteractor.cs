@@ -1,4 +1,5 @@
 ﻿using ComputerUtils.Encryption;
+using ComputerUtils.Logging;
 using ModUploadSite.Mods;
 using ModUploadSite.Users;
 using MongoDB.Bson;
@@ -72,18 +73,32 @@ namespace ModUploadSite
             return modCollection.Distinct(x => x.groupVersion, x => x.group == groupId).ToList();
         }
 
-        public static List<UploadedMod> GetModsByUser(string username)
+        public static List<UploadedMod> GetModsByUser(string username, List<int> statuses)
         {
-            return modCollection.Find(x => x.uploader == username).ToList();
+            return modCollection.Find(GetStatusFilter(new List<FilterDefinition<UploadedMod>> { Builders<UploadedMod>.Filter.Eq("uploader", username) }, statuses)).ToList();
+
         }
 
-        public static List<UploadedMod> GetModsOfGroup(string game)
+        public static List<UploadedMod> GetModsOfGroup(string game, List<int> statuses)
         {
-            return modCollection.Find(x => x.group == game).ToList();
+            return modCollection.Find(GetStatusFilter(new List<FilterDefinition<UploadedMod>> { Builders<UploadedMod>.Filter.Eq("group", game) }, statuses)).ToList();
+
         }
-        public static List<UploadedMod> GetModsOfGroupAndVersion(string game, string gameversion)
+        public static List<UploadedMod> GetModsOfGroupAndVersion(string game, string gameversion, List<int> statuses)
         {
-            return modCollection.Find(x => x.group == game && x.groupVersion == gameversion).ToList();
+            return modCollection.Find(GetStatusFilter(new List<FilterDefinition<UploadedMod>> { Builders<UploadedMod>.Filter.Eq("group", game), Builders<UploadedMod>.Filter.Eq("groupVersion", gameversion) }, statuses)).ToList();
+        }
+
+        public static FilterDefinition<UploadedMod> GetStatusFilter(List<FilterDefinition<UploadedMod>> mustMatch, List<int> statuses)
+        {
+            List<FilterDefinition<UploadedMod>> filters = new List<FilterDefinition<UploadedMod>>();
+            foreach (int status in statuses)
+            {
+                Logger.Log(status.ToString());
+                filters.Add(Builders<UploadedMod>.Filter.Eq("status", status));
+            }
+            mustMatch.Add(Builders<UploadedMod>.Filter.Or(filters));
+            return Builders<UploadedMod>.Filter.And(mustMatch);
         }
 
         public static void DeleteMod(string modId)

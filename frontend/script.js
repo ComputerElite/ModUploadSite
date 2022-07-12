@@ -1,6 +1,5 @@
 const params = new URLSearchParams(window.location.search)
 
-
 function FormatGroup(group, showEditButton = false) {
     return ` <div class="card">
         <h3 class="nomargintopbottom">${SafeFormat(group.name)}</h3>
@@ -53,13 +52,17 @@ function GetPreview(modId, modFile) {
 function GetModStatusFromInt(s) {
     switch(s) {
         case 0: return "Unpublished"
-        case 1: return "Pending"
+        case 1: return "Approval Pending"
         case 2: return "Approved"
         case 3: return "Declined"
     }
 }
 
-function FormatMod(mod, showEditButton = false, otherButtons = true) {
+const noMods = `<div class="card">
+<h3 class="nomargintopbottom">No mods</h3>
+</div>`
+
+function FormatMod(mod, showEditButton = false, otherButtons = true, isApproving = false) {
     var preview = ``
     for(let i = 0; i < mod.files.length; i++) {
         preview = GetPreview(mod.uploadedModId, mod.files[i])
@@ -75,7 +78,7 @@ function FormatMod(mod, showEditButton = false, otherButtons = true) {
                 <div class="margintopmarginleft">${SafeFormat(mod.description)}</div>
                 ${preview}
                 ${otherButtons ? `<input onclick="Download('${mod.uploadedModId}')" type="button" value="Download">
-                <input onclick="Details('${mod.uploadedModId}')" type="button" value="Details">` : ``}
+                <input onclick="Details('${mod.uploadedModId}', ${isApproving})" type="button" value="Details">` : ``}
                 ${showEditButton ? `<input onclick="Edit('${mod.uploadedModId}')" type="button" value="Edit">` : ``}
             </div>`
 }
@@ -105,8 +108,8 @@ function Download(modId) {
     })
 }
 
-function Details(modId) {
-    location = `/mod/${modId}`
+function Details(modId, isApproving) {
+    location = `/mod/${modId}${isApproving ? `?isapproving` : ``}`
 }
 
 function Edit(modId) {

@@ -12,17 +12,36 @@
             <h3>Files</h3>
             <div class="flex" id="files">
             </div>
+            <div class="textbox margin-top" id="text"></div>
+            <select class="hidden" id="status">
+                <option value="0">Unpublished</option>
+                <option value="1">Pending</option>
+                <option value="2">Approved</option>
+                <option value="3">Declined</option>
+            </select>
+            <input type="button" id="send" class="hidden" onclick="SetStatus()" value="Set as status">
         </div>
         <script src="/script.js"></script>
         <script>
             const mode = document.getElementById("mod")
             const modName = document.getElementById("modName")
             const files = document.getElementById("files")
+            const send = document.getElementById("send")
+            const status = document.getElementById("status")
             var first = true
+
+            if(params.has("isapproving")) {
+                send.style.display = "block"
+                status.style.display = "block"
+            }
 
             var currentModId = `{0}`;
             var modInfo = {}
             UpdateMod()
+
+            function SetStatus() {
+                UpdateModStatus(status.value, modInfo.uploadedModId)
+            }
 
             function UpdateMod() {
                 jfetch("/api/v1/mod/" + currentModId, "GET").then(res => {

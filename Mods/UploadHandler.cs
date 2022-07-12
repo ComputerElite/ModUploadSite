@@ -23,6 +23,7 @@ namespace ModUploadSite
             if (!IdValidator.IsIdValid(fileHash)) return new GenericRequestResponse(400, "File hash is not valid");
             // Check if user is owner of mod
             UploadedMod mod = MongoDBInteractor.GetMod(modId);
+            if (!IsUserAllowedToEditMod(mod, MongoDBInteractor.GetGroup(mod.group))) return new GenericRequestResponse(400, "Unpublish the mod before editing (approval needed after edit) or create a new mod");
             if (!IsUserOwnerOfMod(token, mod)) return new GenericRequestResponse(403, "You do not own this mod. Modifications are not allowed");
             // Check if file exists
             mod.RemoveModFile(fileHash);
@@ -40,6 +41,7 @@ namespace ModUploadSite
             // Check if user is owner of mod
             UploadedMod cmod = MongoDBInteractor.GetMod(mod.uploadedModId);
             if (!IsUserOwnerOfMod(token, cmod)) return new GenericRequestResponse(403, "You do not own this mod. Modifications are not allowed");
+            if (!IsUserAllowedToEditMod(cmod, MongoDBInteractor.GetGroup(mod.group))) return new GenericRequestResponse(400, "Unpublish the mod before editing (approval needed after edit) or create a new mod");
             mod.uploader = cmod.uploader;
             mod.status = cmod.status;
             if (MongoDBInteractor.GetModGroups().FirstOrDefault(x => x.groupId == mod.group) == null && mod.group != "") return new GenericRequestResponse(400, "This group does not exist. Please put in a group id");
@@ -68,6 +70,12 @@ namespace ModUploadSite
             return u.username == mod.uploader;
         }
 
+        public static bool IsUserAllowedToEditMod(UploadedMod mod, UploadedModGroup group)
+        {
+            if (group.requireApproval && mod.status != UploadedModStatus.Unpublished) return false;
+            return true;
+        }
+
         public static GenericRequestResponse HandleModFileAutoPopulate(string modId, string fileHash, string token)
         {
             if (!IdValidator.IsIdValid(modId)) return new GenericRequestResponse(400, "ModId is not valid");
@@ -76,6 +84,7 @@ namespace ModUploadSite
             // Check if user is owner of mod
             UploadedMod mod = MongoDBInteractor.GetMod(modId);
             if (!IsUserOwnerOfMod(token, mod)) return new GenericRequestResponse(403, "You do not own this mod. Modifications are not allowed");
+            if (!IsUserAllowedToEditMod(mod, MongoDBInteractor.GetGroup(mod.group))) return new GenericRequestResponse(400, "Unpublish the mod before editing (approval needed after edit) or create a new mod");
 
             // Check if file exists
             string filePath = PathManager.GetModFile(modId, fileHash);
@@ -103,6 +112,10 @@ namespace ModUploadSite
             UploadedMod mod = MongoDBInteractor.GetMod(modId);
             if (!IsUserOwnerOfMod(token, mod)) return new GenericRequestResponse(403, "You do not own this mod. Modifications are not allowed");
 
+            UploadedModGroup group = MongoDBInteractor.GetGroup(mod.group);
+            if (!IsUserAllowedToEditMod(mod, group)) return new GenericRequestResponse(400, "Unpublish the mod before editing (approval needed after edit) or create a new mod");
+
+
             string fileHash = Hasher.GetSHA256OfByteArray(file);
             // Check if file already exists
             string filePath = PathManager.GetModFile(modId, fileHash);
@@ -110,7 +123,7 @@ namespace ModUploadSite
             // Save file
             File.WriteAllBytes(filePath, file);
 
-            UploadedModGroup group = MongoDBInteractor.GetGroup(mod.group);
+            
 
             ValidationResult result = ValidationManager.ValidateFile(filename, filePath);
             bool isAllowed = false;
@@ -152,7 +165,7 @@ namespace ModUploadSite
         public static GenericRequestResponse CreateModUploadSession(string token)
         {
             User u = MongoDBInteractor.GetUserByToken(token);
-            if (u == null) return new GenericRequestResponse(400, "Invalid session");
+            if (u == null) return new GenericRequestResponse(400, "Invalid user session");
             string modId = IdValidator.GetNewId(); // Chance that id exists is very low but ofc can happen. Chance is 1 in 2^256
             UploadedMod newMod = new UploadedMod();
             newMod.uploadedModId = modId;
@@ -182,7 +195,6 @@ namespace ModUploadSite
             {
                 return new GenericRequestResponse(400, "Status must be an int");
             }
-            Logger.Log(status);
             UploadedModGroup group = MongoDBInteractor.GetGroup(mod.group);
             if(newModStatus == UploadedModStatus.Approved || newModStatus == UploadedModStatus.Declined)
             {
@@ -191,8 +203,6 @@ namespace ModUploadSite
                     return new GenericRequestResponse(403, "You are not allowed to approve or decline mods");
                 }
             }
-
-            // Get mod and set state to Pending
             mod.status = newModStatus;
             MongoDBInteractor.UpdateMod(mod);
             return new GenericRequestResponse(200, "Mod state set to " + Enum.GetName(mod.status));
