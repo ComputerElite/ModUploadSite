@@ -188,7 +188,7 @@ namespace ModUploadSite
             {
                 HandleGenericResponse(request, UploadHandler.HandleDeleteMod(request.pathDiff, GetToken(request)));
                 return true;
-            }), false, true, true);
+            }), true, true, true);
             server.AddRoute("GET", "/api/v1/getmods", new Func<ServerRequest, bool>(request =>
             {
                 HandleGenericResponse(request, ModQueries.GetMods(request, GetToken(request)));
